@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Blue Hearts with YouTube Music</title>
+  <style>
+    body {
+      margin: 0;
+      background-color: black;
+      overflow: hidden;
+      color: white;
+      font-family: Arial, sans-serif;
+      text-align: center;
+    }
+
+    #upload-section {
+      position: absolute;
+      top: 10px;
+      left: 10px;
+      z-index: 1000;
+      color: white;
+    }
+
+    #image-container img {
+      max-width: 90%;
+      max-height: 60vh;
+      margin-top: 100px;
+      border: 5px solid white;
+      border-radius: 10px;
+    }
+
+    #message {
+      font-size: 1em;
+      margin-top: 20px;
+      color: #00bfff;
+    }
+
+    .heart {
+      position: absolute;
+      color: #00bfff;
+      font-size: 20px;
+      animation: float 6s linear infinite;
+    }
+
+    @keyframes float {
+      0% {
+        transform: translateY(100vh) scale(0.5);
+        opacity: 0;
+      }
+      50% {
+        opacity: 1;
+      }
+      100% {
+        transform: translateY(-100vh) scale(1);
+        opacity: 0;
+      }
+    }
+
+    #playMusicBtn {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      z-index: 1000;
+      padding: 10px 15px;
+      background-color: #00bfff;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+
+    #playMusicBtn:hover {
+      background-color: #0099cc;
+    }
+
+    #youtube-player iframe {
+      position: fixed;
+      bottom: 10px;
+      left: 10px;
+      width: 300px;
+      height: 170px;
+      border: none;
+      border-radius: 8px;
+      z-index: 1000;
+      background: black;
+    }
+  </style>
+</head>
+<body>
+  <!-- Upload + Message Input -->
+  <div id="upload-section">
+    <input type="file" id="imageInput" accept="image/*" /><br />
+    <input type="text" id="messageInput" placeholder="Enter your message" style="margin-top: 5px" />
+    <button onclick="applyMessage()">Apply Message</button>
+  </div>
+
+  <!-- Play Music Button -->
+  <button id="playMusicBtn">Play Music</button>
+
+  <!-- Image and Message Display -->
+  <div id="image-container"></div>
+  <div id="message"></div>
+
+  <!-- YouTube Player -->
+  <div id="youtube-player"></div>
+
+  <script>
+    const imageInput = document.getElementById("imageInput");
+    const imageContainer = document.getElementById("image-container");
+
+    // Load saved data
+    window.addEventListener("load", () => {
+      const savedImg = localStorage.getItem("savedImage");
+      const savedMsg = localStorage.getItem("savedMessage");
+      if (savedImg) {
+        imageContainer.innerHTML = `<img src="${savedImg}" alt="Saved Image" />`;
+      }
+      if (savedMsg) {
+        document.getElementById("message").innerText = savedMsg;
+        document.getElementById("messageInput").value = savedMsg;
+      }
+    });
+
+    // Save image to localStorage
+    imageInput.addEventListener("change", function () {
+      const file = this.files[0];
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = function (e) {
+          const imgData = e.target.result;
+          imageContainer.innerHTML = `<img src="${imgData}" alt="Uploaded Image" />`;
+          localStorage.setItem("savedImage", imgData);
+        };
+        reader.readAsDataURL(file);
+      }
+    });
+
+    // Save message to localStorage
+    function applyMessage() {
+      const msg = document.getElementById("messageInput").value;
+      document.getElementById("message").innerText = msg;
+      localStorage.setItem("savedMessage", msg);
+    }
+
+    // Floating Hearts
+    function createHeart() {
+      const heart = document.createElement("div");
+      heart.className = "heart";
+      heart.innerText = "💙";
+      heart.style.left = Math.random() * 100 + "vw";
+      heart.style.fontSize = Math.random() * 20 + 10 + "px";
+      document.body.appendChild(heart);
+      setTimeout(() => heart.remove(), 6000);
+    }
+    setInterval(createHeart, 300);
+
+    // YouTube Embed
+    const playBtn = document.getElementById("playMusicBtn");
+    const youtubePlayerDiv = document.getElementById("youtube-player");
+    const youtubeLink = "https://www.youtube.com/watch?v=ejNLMYsKiQA";
+
+    function getYouTubeID(url) {
+      const regExp = /^.*(youtu\.be\/|v\/|u\/\w\/|embed\/|watch\?v=)([^#\&\?]*).*/;
+      const match = url.match(regExp);
+      return match && match[2].length === 11 ? match[2] : null;
+    }
+
+    playBtn.addEventListener("click", () => {
+      const videoID = getYouTubeID(youtubeLink);
+      if (videoID) {
+        const iframe = document.createElement("iframe");
+        iframe.src = `https://www.youtube.com/embed/${videoID}?loop=1&playlist=${videoID}&autoplay=1`;
+        iframe.allow = "autoplay; encrypted-media";
+        iframe.allowFullscreen = true;
+        youtubePlayerDiv.appendChild(iframe);
+        playBtn.style.display = "none";
+      } else {
+        alert("Invalid YouTube link!");
+      }
+    });
+  </script>
+</body>
+</html>
